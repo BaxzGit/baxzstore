@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BaxzStore  — Portfolio</title>
+  <meta name="description" content="Portfolio profesional dark theme dengan produk, rating, komentar, dan admin panel lokal (password-protected).">
+  <style>
+    /* ---------- BASE / THEME ---------- */
+    :root{
+      --bg:#0b0f13; --card:#0f1620; --muted:#98a0aa; --accent:#6ee7b7; --glass: rgba(255,255,255,0.04);
+      --glass-2: rgba(255,255,255,0.02); --danger:#ff6b6b; --glass-border: rgba(255,255,255,0.06);
+      --radius:16px; --glass-padding:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial; background: radial-gradient(ellipse at 10% 10%, rgba(110,231,183,0.03), transparent 10%), radial-gradient(ellipse at 90% 90%, rgba(110,231,183,0.02), transparent 10%), var(--bg); color:#e6eef3; -webkit-font-smoothing:antialiased}
+
+    /* ---------- LAYOUT ---------- */
+    .container{max-width:1100px;margin:48px auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#0fffc1,#2dd4bf);display:flex;align-items:center;justify-content:center;font-weight:700;color:#021114}
+    .site-title{line-height:1}
+    .site-title h1{font-size:18px;margin:0}
+    .site-title p{margin:0;color:var(--muted);font-size:13px}
+
+    nav{display:flex;gap:10px;align-items:center}
+    .btn{background:var(--glass);border:1px solid var(--glass-border);padding:10px 14px;border-radius:12px;cursor:pointer;color:inherit;font-weight:600}
+    .btn.ghost{background:transparent}
+
+    /* ---------- HERO & PROFILE ---------- */
+    .hero{display:grid;grid-template-columns:260px 1fr;gap:24px;margin-top:28px}
+    .profile-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:var(--glass-padding);border-radius:20px;border:1px solid rgba(255,255,255,0.03);position:relative;overflow:visible}
+    .avatar-wrap{position:relative;width:160px;height:160px;margin:0 auto}
+    .avatar{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0fffc1,#6ee7b7);display:flex;align-items:center;justify-content:center;font-size:36px;color:#021114;box-shadow:0 8px 30px rgba(0,0,0,0.6);background-size:cover;background-position:center}
+
+    /* rotating bird animation */
+    .orbit{position:absolute;left:50%;top:50%;width:240px;height:240px;margin-left:-120px;margin-top:-120px;pointer-events:none}
+    .orbit .sat{position:absolute;left:50%;top:0;transform:translateX(-50%);width:36px;height:36px}
+    .orbit .sat svg{width:100%;height:100%}
+    .orbit-rot{animation:spin 10s linear infinite}
+    @keyframes spin{from{transform:rotate(0deg)} to{transform:rotate(360deg)}}
+
+    .profile-info{text-align:center;margin-top:12px}
+    .profile-info h2{margin:8px 0 4px 0}
+    .profile-info p{margin:0;color:var(--muted)}
+    .contacts{display:flex;gap:8px;justify-content:center;margin-top:12px}
+    .contact-icon{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--glass-border);background:var(--glass-2);cursor:pointer}
+
+    /* ---------- PRODUCT AREA ---------- */
+    .content-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:var(--glass-padding);border-radius:20px;border:1px solid rgba(255,255,255,0.03)}
+    .products-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:18px}
+    .product{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:10px}
+    .product img{width:100%;height:150px;object-fit:cover;border-radius:10px}
+    .price{font-weight:800}
+
+    .actions{display:flex;gap:8px;align-items:center}
+    .small{padding:8px 10px;border-radius:10px;font-weight:700}
+
+    /* ---------- MODALS ---------- */
+    .modal-backdrop{position:fixed;inset:0;background:linear-gradient(180deg, rgba(2,6,10,0.6), rgba(2,6,10,0.85));display:flex;align-items:center;justify-content:center;z-index:60}
+    .modal{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);width:420px}
+    label{display:block;margin-top:10px;color:var(--muted);font-size:13px}
+    input[type="text"], input[type="number"], textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--glass-border);background:transparent;color:inherit}
+
+    /* ---------- COMMENTS & RATING ---------- */
+    .stars{display:inline-flex;gap:4px}
+    .star{width:18px;height:18px;opacity:0.9}
+    .comment{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
+
+    /* ---------- LOADING ---------- */
+    .loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(0deg, rgba(2,6,10,0.6), rgba(2,6,10,0.6));z-index:9999}
+    .loader{width:120px;height:120px;border-radius:20px;background:linear-gradient(135deg, rgba(255,255,255,0.03), transparent);display:flex;align-items:center;justify-content:center;flex-direction:column;border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(6px)}
+    .loader .ring{width:70px;height:70px;border-radius:50%;border:6px solid rgba(255,255,255,0.04);border-top-color:var(--accent);animation:spin 1.4s linear infinite}
+    .loader p{margin:10px 0 0 0;color:var(--muted);font-size:13px}
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width:880px){.hero{grid-template-columns:1fr} .orbit{display:none} .avatar-wrap{margin:8px auto}}
+
+    /* subtle micro-animations */
+    .product:hover{transform:translateY(-6px);transition:transform 240ms ease}
+    .btn:active{transform:translateY(1px)}
+
+    /* footer */
+    footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <!--
+    INSTRUKSI PENTING:
+    - File ini adalah single-file demo client-side. Semua data (produk, komentar, rating) disimpan di localStorage.
+    - Password admin default: "gudangRahasia!2025". Ubah di baris JS `DEFAULT_ADMIN_PASSWORD` untuk keamanan.
+    - Untuk deploy ke hosting, cukup simpan sebagai `index.html` dan unggah.
+  -->
+
+  <div id="loading" class="loading-overlay">
+    <div class="loader" role="status">
+      <div class="ring" aria-hidden="true"></div>
+      <p>Memuat portofolio...</p>
+    </div>
+  </div>
+
+  <div class="container" id="app" style="opacity:0">
+    <header>
+      <div class="brand">
+        <div class="logo" id="siteLogo">BG</div>
+        <div class="site-title">
+          <h1 id="siteTitle">BaxzStore  — Portfolio</h1>
+          <p id="siteSubtitle">Produk & layanan profesional</p>
+        </div>
+      </div>
+      <nav>
+        <button class="btn" id="btnAdmin">Admin</button>
+        <a class="btn" href="#products">Produk</a>
+      </nav>
+    </header>
+
+    <main class="hero">
+      <aside class="profile-card">
+        <div class="avatar-wrap">
+          <div class="avatar" id="avatar">BR</div>
+          <div class="orbit orbit-rot" aria-hidden>
+            <div class="sat"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12c4 0 6-8 14-8" stroke="white" stroke-opacity="0.9" stroke-width="0.8" stroke-linecap="round"/></svg></div>
+            <div class="sat" style="transform:rotate(120deg) translateX(90px) rotate(-120deg);"><svg viewBox="0 0 24 24"><path d="M2 12c4 0 6-8 14-8" stroke="white" stroke-opacity="0.9" stroke-width="0.8" stroke-linecap="round"/></svg></div>
+          </div>
+        </div>
+        <div class="profile-info">
+          <h2 id="profileName">BaxzStore </h2>
+          <p id="profileRole">Developer • Freelancer • Creator</p>
+          <div class="contacts">
+            <a class="contact-icon" href="https://wa.me/6283109105308" target="_blank" rel="noopener noreferrer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 12.1c0 4.9-3.9 8.9-8.7 8.9-1.5 0-2.8-.4-4-1l-4.2 1.1 1.1-4.1c-1-1.2-1.5-2.6-1.5-4.2C3.9 7.2 7.9 3.3 12.7 3.3S21 7.2 21 12.1z" stroke="white" stroke-opacity="0.9" stroke-width="0.9"/></svg><span style="font-size:13px">WhatsApp</span></a>
+            <a class="contact-icon" href="https://www.tiktok.com/@BaxzStore " target="_blank" rel="noopener noreferrer"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M9 8v8a4 4 0 1 0 4-4V6h3V3h-3a6 6 0 0 1-5 5z" stroke="white" stroke-opacity="0.9" stroke-width="0.9" fill="none"/></svg><span style="font-size:13px">TikTok</span></a>
+            <a class="contact-icon" href="https://t.me/Bayzu1" target="_blank" rel="noopener noreferrer"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M22 4L2 12l6 2 2 6 1-6 11-10z" stroke="white" stroke-opacity="0.9" stroke-width="0.9" fill="none"/></svg><span style="font-size:13px">Telegram</span></a>
+          </div>
+        </div>
+      </aside>
+
+      <section class="content-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h3 style="margin:0">Produk Unggulan</h3>
+            <p style="margin:6px 0 0 0;color:var(--muted);font-size:13px">Satu produk ditampilkan — admin dapat menambah/menghapus.</p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn" id="btnAddProduct">Tambah Produk</button>
+            <button class="btn ghost" id="btnRefresh">Reload</button>
+          </div>
+        </div>
+
+        
+<div style="margin-top:12px; display:flex; justify-content:flex-end">
+  <input id="searchInput" type="text" placeholder="Cari produk..." 
+    style="padding:10px; border-radius:10px; border:1px solid var(--glass-border); background:var(--glass-2); color:inherit; width:220px">
+</div>
+
+        <div id="products" class="products-grid" style="margin-top:18px">
+          <!-- product cards injected here -->
+        </div>
+      </section>
+    </main>
+
+
+    <section class="content-card" style="margin-top:20px">
+      <h3 style="margin:0 0 12px 0">Video</h3>
+      <video controls style="width:100%; border-radius:12px; max-height:400px; background:#000">
+        <source src="video.mp4" type="video/mp4">
+        Browser Anda tidak mendukung pemutaran video.
+      </video>
+    </section>
+
+    <footer>
+      <div>© <span id="year"></span> BaxzStore  — Portfolio. Kontak: WhatsApp +6283109105308 • TikTok @bayz22yaw • Telegram @Bayzu1</div>
+    </footer>
+  </div>
+
+  <!-- MODALS (injected) -->
+  <div id="modal-root"></div>
+
+  <script>
+    /* ---------- Configuration ---------- */
+    const DEFAULT_ADMIN_PASSWORD = 'gudangRahasia!2025'; // ubah ini setelah deploy
+    const STORAGE_KEYS = { products: 'bg_products_v1', admin: 'bg_admin_pass', profile: 'bg_profile_v1' };
+
+    // Initialize admin password in localStorage if not present
+    if(!localStorage.getItem(STORAGE_KEYS.admin)) localStorage.setItem(STORAGE_KEYS.admin, DEFAULT_ADMIN_PASSWORD);
+
+    /* ---------- Utilities ---------- */
+    const qs = s => document.querySelector(s);
+    const qsa = s => document.querySelectorAll(s);
+
+    function formatPrice(n){
+      return 'Rp ' + Number(n).toLocaleString('id-ID');
+    }
+
+    /* ---------- Data handling ---------- */
+    function loadProducts(){
+      const raw = localStorage.getItem(STORAGE_KEYS.products);
+      if(!raw) return [];
+      try{ return JSON.parse(raw) }catch(e){ return [] }
+    }
+    function saveProducts(list){ localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(list)); }
+
+    function createProduct({id,title,price,image,description}){
+      return {id, title, price, image, description, created: Date.now(), comments: []}
+    }
+
+    /* ---------- Profile handling ---------- */
+    function loadProfile(){
+      const raw = localStorage.getItem(STORAGE_KEYS.profile);
+      if(!raw) return;
+      try{
+        const p = JSON.parse(raw);
+        if(p.logo) qs('#siteLogo').innerHTML = '';
+        if(p.logo) qs('#siteLogo').style.backgroundImage = `url(${p.logo})`;
+        if(p.title) qs('#siteTitle').textContent = p.title;
+        if(p.subtitle) qs('#siteSubtitle').textContent = p.subtitle;
+        if(p.avatar){
+          const av = qs('#avatar'); av.style.backgroundImage = `url(${p.avatar})`; av.textContent='';
+        } else if(p.initials){
+          const av = qs('#avatar'); av.style.backgroundImage=''; av.textContent = p.initials;
+        }
+        if(p.name) qs('#profileName').textContent = p.name;
+        if(p.role) qs('#profileRole').textContent = p.role;
+      }catch(e){/* ignore */}
+    }
+
+    function saveProfile(profile){ localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(profile)); loadProfile(); }
+
+    /* ---------- DOM rendering ---------- */
+    function renderProducts(){
+      const list = getFilteredProducts();
+      const container = qs('#products'); container.innerHTML='';
+      
+      if(list.length===0){
+        container.innerHTML = '<div style="grid-column:1/-1;padding:30px;border-radius:12px;background:var(--glass-2);text-align:center;color:var(--muted)">Belum ada produk. Admin bisa menambahkannya.</div>';
+        return;
+      }
+      list.forEach(p=>{
+        const el = document.createElement('div'); el.className='product'; el.dataset.id=p.id;
+        el.innerHTML = `
+          <img src="${p.image || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'600\' height=\'400\'><rect width=\'100%\' height=\'100%\' fill=\'%23121a22\' /><text x=\'50%\' y=\'50%\' fill=\'%23ffffff%27 font-size=\'20\' dominant-baseline=\'middle\' text-anchor=\'middle\'>No Image</text></svg>' }" alt="${p.title}">
+          <div style="display:flex;justify-content:space-between;align-items:center"><div style="max-width:68%"><h4 style=\"margin:6px 0 2px 0\">${p.title}</h4><div style=\"color:var(--muted);font-size:13px\">${p.description || ''}</div></div><div class=\"price\">${formatPrice(p.price)}</div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <div class="actions">
+              <button class="small btn" data-action="comment" data-id="${p.id}">Comment</button>
+              <button class="small btn" data-action="view" data-id="${p.id}">View</button>
+              <button class="small btn" data-action="buy" data-id="${p.id}">Buy via WhatsApp</button>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <div style="font-size:13px;color:var(--muted)">${avgRatingHtml(p.comments)}</div>
+              <button class="small btn ghost" data-action="share" data-id="${p.id}">Share</button>
+              <button class="small btn ghost admin-only" data-action="delete" data-id="${p.id}">Delete</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+      bindProductButtons();
+      toggleAdminControls();
+    }
+
+    function avgRatingHtml(comments){
+      if(!comments || comments.length===0) return 'No ratings';
+      const avg = comments.reduce((s,c)=>s+c.rating,0)/comments.length;
+      const stars = Array.from({length:5}).map((_,i)=> i<Math.round(avg)?'★':'☆').join('');
+      return `${stars} (${(avg).toFixed(1)})`;
+    }
+
+    /* ---------- Events & Modals ---------- */
+    function bindProductButtons(){
+      qsa('[data-action]').forEach(btn=>btn.addEventListener('click', e=>{
+        const action = btn.dataset.action; const id = btn.dataset.id;
+        if(action==='comment') openCommentModal(id);
+        if(action==='view') openViewModal(id);
+
+        if(action==='buy') buyViaWhatsApp(id);
+
+        if(action==='delete') confirmDelete(id);
+        if(action==='share') shareProduct(id);
+      }))
+    }
+
+    
+
+    function buyViaWhatsApp(id){
+      const p = loadProducts().find(x=>x.id===id);
+      if(!p) return;
+      const phone = '6283109105308'; // ganti dengan nomor WhatsApp kamu
+      const text = encodeURIComponent(`Halo, saya tertarik membeli produk: ${p.title} seharga ${formatPrice(p.price)}. Apakah masih tersedia?`);
+      const url = `https://wa.me/${phone}?text=${text}`;
+      window.open(url, '_blank');
+    }
+
+    function shareProduct(id){
+      const p = loadProducts().find(x=>x.id===id); if(!p) return;
+      const url = location.href + '#product-' + id;
+      navigator.clipboard?.writeText(url).then(()=>alert('Link produk disalin ke clipboard'))
+    }
+
+    function openViewModal(id){
+      const p = loadProducts().find(x=>x.id===id); if(!p) return;
+      showModal(`<div style="text-align:center"><img src=\"${p.image}\" style=\"width:100%;height:240px;object-fit:cover;border-radius:10px\"><h3>${p.title}</h3><p style=\"color:var(--muted)\">${p.description||''}</p><div style=\"margin-top:10px;font-weight:800\">${formatPrice(p.price)}</div><div style=\"margin-top:12px;text-align:left\"><h4 style=\"margin:6px 0\">Ulasan</h4>${(p.comments.length? p.comments.map(c=>`<div class=\"comment\"><div style=\"font-weight:700\">${escapeHtml(c.name)} <span style=\"color:var(--muted);font-weight:600\">• ${c.rating}★</span></div><div style=\"color:var(--muted);font-size:13px\">${escapeHtml(c.text)}</div></div>`).join('') : '<div style=\"color:var(--muted)\">Belum ada komentar</div>')}</div></div>`);
+    }
+
+    function openCommentModal(id){
+      const p = loadProducts().find(x=>x.id===id); if(!p) return;
+      showModal(`
+        <h3>Berikan Komentar untuk ${p.title}</h3>
+        <label>Nama</label><input id=\"c_name\" type=\"text\" placeholder=\"Nama Anda\">
+        <label>Rating</label>
+        <div style=\"margin-top:6px;margin-bottom:6px\">${[5,4,3,2,1].map(n=>`<label style=\"margin-right:8px\"><input type=\"radio\" name=\"rating\" value=\"${n}\"> ${n}★</label>`).join('')}</div>
+        <label>Komentar</label><textarea id=\"c_text\" rows=\"4\" placeholder=\"Tulis ulasan...\"></textarea>
+        <div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:10px\"><button class=\"btn\" id=\"submitComment\">Kirim</button></div>
+      `);
+      qs('#submitComment').addEventListener('click', ()=>{
+        const name = qs('#c_name').value.trim() || 'Anonim';
+        const rating = Number(document.querySelector('input[name=\'rating\']:checked')?.value || 5);
+        const text = qs('#c_text').value.trim();
+        p.comments.push({name, rating, text, when:Date.now()});
+        const all = loadProducts().map(x=> x.id===p.id? p : x);
+        saveProducts(all); renderProducts(); closeModal();
+      })
+    }
+
+    function confirmDelete(id){
+      showModal(`<h3>Hapus produk?</h3><p style=\"color:var(--muted)\">Aksi ini tidak bisa dikembalikan.</p><div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:10px\"><button class=\"btn ghost\" id=\"cancelDel\">Batal</button><button class=\"btn\" id=\"doDel\">Hapus</button></div>`);
+      qs('#cancelDel').addEventListener('click', closeModal);
+      qs('#doDel').addEventListener('click', ()=>{ const after = loadProducts().filter(x=>x.id!==id); saveProducts(after); renderProducts(); closeModal(); });
+    }
+
+    /* ---------- Admin flow ---------- */
+    let isAdmin=false;
+    qs('#btnAdmin').addEventListener('click', ()=>{
+      showModal(`<h3>Admin Login</h3><label>Masukkan password admin</label><input id=\"admin_pass\" type=\"text\"><div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:10px\"><button class=\"btn ghost\" id=\"cancelLogin\">Batal</button><button class=\"btn\" id=\"doLogin\">Login</button></div>`);
+      qs('#cancelLogin').addEventListener('click', closeModal);
+      qs('#doLogin').addEventListener('click', ()=>{
+        const pass = qs('#admin_pass').value;
+        const stored = localStorage.getItem(STORAGE_KEYS.admin);
+        if(pass===stored){ isAdmin=true; closeModal(); toggleAdminControls(); alert('Login admin berhasil'); openAdminPanel(); }
+        else alert('Password salah');
+      })
+    });
+
+    function toggleAdminControls(){
+      qsa('.admin-only').forEach(el=> el.style.display = isAdmin ? 'inline-flex' : 'none');
+      qs('#btnAddProduct').style.display = isAdmin ? 'inline-flex' : 'none';
+    }
+
+    function openAdminPanel(){
+      showModal(`<h3>Admin Panel</h3><div style=\"display:flex;flex-direction:column;gap:8px\"><button class=\"btn\" id=\"openAdd\">Tambah Produk</button><button class=\"btn ghost\" id=\"chgPass\">Ganti Password</button><button class=\"btn\" id=\"editProfile\">Ubah Logo/Profil</button></div>`);
+      qs('#openAdd').addEventListener('click', ()=>{ closeModal(); openAddProductModal();});
+      qs('#chgPass').addEventListener('click', ()=>{ closeModal(); openChangePassModal(); });
+      qs('#editProfile').addEventListener('click', ()=>{ closeModal(); openEditProfileModal(); });
+    }
+
+    function openAddProductModal(){
+      showModal(`
+        <h3>Tambah Produk</h3>
+        <label>Judul</label><input id=\"p_title\" type=\"text\" placeholder=\"Nama produk\">
+        <label>Harga (angka)</label><input id=\"p_price\" type=\"number\" placeholder=\"100000\">
+        <label>Deskripsi</label><textarea id=\"p_desc\" rows=\"3\"></textarea>
+        <label>Gambar</label><input id=\"p_img\" type=\"file\" accept=\"image/*\">
+        <div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:10px\"><button class=\"btn ghost\" id=\"cancelAdd\">Batal</button><button class=\"btn\" id=\"doAdd\">Tambah</button></div>
+      `);
+      qs('#cancelAdd').addEventListener('click', closeModal);
+      qs('#doAdd').addEventListener('click', ()=>{
+        const title = qs('#p_title').value.trim(); const price = Number(qs('#p_price').value||0); const desc = qs('#p_desc').value.trim();
+        const file = qs('#p_img').files[0];
+        if(!title||!price){ alert('Isi judul dan harga'); return }
+        if(file){ const reader=new FileReader(); reader.onload=()=>{ const img = reader.result; const id = 'p_'+Date.now(); const p = createProduct({id,title,price,image:img,description:desc}); const all = [p].concat(loadProducts()); saveProducts(all); renderProducts(); closeModal(); alert('Produk ditambahkan'); }; reader.readAsDataURL(file); }
+        else{ const id='p_'+Date.now(); const p=createProduct({id,title,price,image:'',description:desc}); const all=[p].concat(loadProducts()); saveProducts(all); renderProducts(); closeModal(); alert('Produk ditambahkan'); }
+      })
+    }
+
+    function openChangePassModal(){
+      showModal(`<h3>Ganti Password Admin</h3><label>Password baru</label><input id=\"new_pass\" type=\"text\"><div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:10px\"><button class=\"btn ghost\" id=\"cancelCP\">Batal</button><button class=\"btn\" id=\"doCP\">Simpan</button></div>`);
+      qs('#cancelCP').addEventListener('click', closeModal);
+      qs('#doCP').addEventListener('click', ()=>{ const np = qs('#new_pass').value.trim(); if(!np) return alert('Password tidak boleh kosong'); localStorage.setItem(STORAGE_KEYS.admin, np); alert('Password diganti'); closeModal(); });
+    }
+
+    /* ---------- Edit profile (admin) ---------- */
+    function openEditProfileModal(){
+      // preload current profile
+      const curRaw = localStorage.getItem(STORAGE_KEYS.profile);
+      let cur = {};
+      if(curRaw) try{ cur = JSON.parse(curRaw) }catch(e){}
+      showModal(`
+        <h3>Ubah Logo & Profil</h3>
+        <label>Judul situs</label><input id=\"e_title\" type=\"text\" value=\"${escapeHtml(cur.title||'') }\">
+        <label>Subjudul situs</label><input id=\"e_subtitle\" type=\"text\" value=\"${escapeHtml(cur.subtitle||'') }\">
+        <label>Nama (profil)</label><input id=\"e_name\" type=\"text\" value=\"${escapeHtml(cur.name||'') }\">
+        <label>Peran (profil)</label><input id=\"e_role\" type=\"text\" value=\"${escapeHtml(cur.role||'') }\">
+        <label>Logo (opsional, file)</label><input id=\"e_logo\" type=\"file\" accept=\"image/*\">
+        <label>Avatar profil (opsional, file)</label><input id=\"e_avatar\" type=\"file\" accept=\"image/*\">
+        <div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:10px\"><button class=\"btn ghost\" id=\"cancelEdit\">Batal</button><button class=\"btn\" id=\"saveEdit\">Simpan</button></div>
+      `);
+      qs('#cancelEdit').addEventListener('click', closeModal);
+      qs('#saveEdit').addEventListener('click', ()=>{
+        const title = qs('#e_title').value.trim();
+        const subtitle = qs('#e_subtitle').value.trim();
+        const name = qs('#e_name').value.trim();
+        const role = qs('#e_role').value.trim();
+        const logoFile = qs('#e_logo').files[0];
+        const avatarFile = qs('#e_avatar').files[0];
+
+        const profile = { title, subtitle, name, role };
+
+        function finalizeSave(){
+          saveProfile(profile);
+          closeModal();
+          alert('Profil disimpan');
+        }
+
+        if(logoFile){
+          const r = new FileReader(); r.onload = ()=>{ profile.logo = r.result; if(avatarFile){ const r2 = new FileReader(); r2.onload = ()=>{ profile.avatar = r2.result; saveProfile(profile); closeModal(); alert('Profil disimpan'); }; r2.readAsDataURL(avatarFile); } else finalizeSave(); }; r.readAsDataURL(logoFile);
+        } else if(avatarFile){ const r2 = new FileReader(); r2.onload = ()=>{ profile.avatar = r2.result; finalizeSave(); }; r2.readAsDataURL(avatarFile); } else { // no files
+          // if admin didn't upload an avatar but previously there were initials, preserve initials
+          const existingRaw = localStorage.getItem(STORAGE_KEYS.profile);
+          if(existingRaw) try{ const ex = JSON.parse(existingRaw); if(ex.initials && !profile.avatar) profile.initials = ex.initials; }catch(e){}
+          finalizeSave();
+        }
+      })
+    }
+
+    /* ---------- Modal helpers ---------- */
+    function showModal(html){
+      const root = qs('#modal-root'); root.innerHTML = `<div class=\"modal-backdrop\"><div class=\"modal\">${html}<div style=\"position:absolute;right:12px;top:12px\"><button class=\"btn ghost\" id=\"closeModalBtn\">✕</button></div></div></div>`;
+      qs('#closeModalBtn').addEventListener('click', closeModal);
+    }
+    function closeModal(){ const root = qs('#modal-root'); root.innerHTML=''; }
+
+    /* ---------- Helpers ---------- */
+    function escapeHtml(s){ return String(s||'').replace(/[&<>\"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;' }[c]||c)); }
+
+    /* ---------- Init */
+    function initDemoData(){
+      const existing = loadProducts();
+      if(existing.length===0){
+        const demo = createProduct({id:'p_demo', title:'Production Website - Paket Basic', price:450000, image:'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'1200\' height=\'800\'><rect width=\'100%\' height=\'100%\' fill=\'%2310161b%27/><text x=\'50%\' y=\'50%\' fill=\'%23ffffff%27 font-size=\'44\' dominant-baseline=\'middle\' text-anchor=\'middle\'>Production Website - Paket Basic</text></svg>', description:'Website single-page profesional, dark theme, 1 produk, contact & admin panel lokal.'});
+        saveProducts([demo]);
+      }
+    }
+
+    /* ---------- Small utilities */
+    qs('#btnAddProduct').addEventListener('click', ()=>{
+      if(!isAdmin){ alert('Hanya admin yang bisa menambah produk. Silakan login terlebih dahulu.'); return }
+      openAddProductModal();
+    });
+    qs('#btnRefresh').addEventListener('click', ()=> renderProducts());
+
+    
+
+// ---------- Search Feature ----------
+qs('#searchInput').addEventListener('input', () => {
+  renderProducts();
+});
+
+function getFilteredProducts(){
+  const term = qs('#searchInput').value.toLowerCase();
+  const all = loadProducts();
+  if(!term) return all;
+  return all.filter(p => 
+    p.title.toLowerCase().includes(term) || 
+    (p.description && p.description.toLowerCase().includes(term))
+  );
+}
+
+    function init(){
+      document.getElementById('year').textContent = new Date().getFullYear();
+      initDemoData(); loadProfile(); renderProducts();
+      // fake loading
+      setTimeout(()=>{ document.getElementById('loading').style.display='none'; document.getElementById('app').style.opacity=1 }, 800);
+    }
+
+    init();
+  </script>
+</body>
+</html>
